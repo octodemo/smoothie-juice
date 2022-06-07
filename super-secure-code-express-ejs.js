@@ -21,7 +21,7 @@ function generateConfirmation(age){
     </body></html>`
 
     date = new Date()
-    return ""
+    return ejs.render(template,{time: date.toLocaleTimeString()})  
 }
 
 

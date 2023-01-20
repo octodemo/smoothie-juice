@@ -1,0 +1,53 @@
+name: 🏁 Onboarding request
+description: Request Howie onboarding assistance
+title: "[Onboarding] Add your team name here"
+labels: ["onboarding"]
+body:
+  - type: textarea
+    id: repositories
+    attributes:
+      label: 👨🏿‍💻 Repository(s) to configure Howie on
+      description: "Links to the repository(s) you would like Howie installed on"
+    validations:
+      required: true
+  - type: textarea
+    id: projects
+    attributes:
+      label: 📝 GitHub Project(s) to configure Howie on
+      description: "Links to the GitHub Project(s) you would like your repository(s) connected to"
+    validations:
+      required: true
+  - type: textarea
+    id: team
+    attributes:
+      label: 🏘️ GitHub Team for the GitHub Project(s)
+      description: "@mention the GitHub teams whose work is reflected on this project. eg. @github/your-team"
+    validations:
+      required: true
+  - type: textarea
+    id: slack
+    attributes:
+      label: 🔔 Public Slack channel for team notifications
+      description: "A link to a public Slack channel that can be used for your team to receive Howie notifications."
+    validations:
+      required: true
+  - type: textarea
+    id: checklist
+    attributes:
+      label: ☑️ Checklist for Howie Engineering team"
+      value: |
+        - [ ] Make yourself a GitHub admin with the process described [here](https://github.com/github/howie/blob/main/docs/install-the-app.md#1-temporarily-become-a-github-admin).
+        - [ ] On each GitHub Project, create the project fields listed [here](https://github.com/github/howie/blob/main/docs/install-the-app.md#2-set-up-your-project-board--labels).
+          - You do not need to change the status field options (board view columns)
+        - [ ] Get their Slack channel ID from the Slack channel they mentioned. (No need to add the howie app as long as the Slack channel is public)
+        - [ ] Run the Howie Install script as described [here](https://github.com/github/howie/blob/main/docs/install-the-app.md#3-install-howie).
+        - [ ] If the GitHub Project was not using the default values listed here, navigate to the pull request(s) opened by the install script and add a fields overide to the project section(s) in the .github/hww.yml using [this syntax](https://github.com/github/howie/blob/81b13981c6caac7318facbc16f591d4d94e7bedb/.github/hww.defaults.yml#L45-L53).
+          - You'll need to use your best judgement and it's OK if nothing maps to a blocked column.
+          - If there is no column that maps to the backlog column, you can set `backlog: "no status"` for that overide
+        - [ ] Review their GitHub Project and their configuration and make best judgement calls on if any of the configuration should be removed or changed.
+        - [ ] Add the issue author as a reviewer to any PRs opened to install Howie and let them know in the comments that it's ready for them to merge
+        - [ ] Close this issue
+
+        Cc: @github/howie-engineering
+    validations:
+      required: true

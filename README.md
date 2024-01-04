@@ -1,5 +1,7 @@
 # ![Juice Shop Logo](https://raw.githubusercontent.com/juice-shop/juice-shop/master/frontend/src/assets/public/images/JuiceShop_Logo_100px.png) OWASP Juice Shop
 
+[![Board Status](https://dev.azure.com/stargazer4/901012af-d350-4581-9fe5-b86eb971cc7a/0b1d1256-fc69-4e6c-b784-bbd9bba4b415/_apis/work/boardbadge/bc040f3b-1cc2-401a-8a79-b311829e37f7?columnOptions=1)](https://dev.azure.com/stargazer4/901012af-d350-4581-9fe5-b86eb971cc7a/_boards/board/t/0b1d1256-fc69-4e6c-b784-bbd9bba4b415/Stories/)
+
 [![OWASP Flagship](https://img.shields.io/badge/owasp-flagship%20project-48A646.svg)](https://owasp.org/projects/#sec-flagships)
 [![GitHub release](https://img.shields.io/github/release/juice-shop/juice-shop.svg)](https://github.com/juice-shop/juice-shop/releases/latest)
 [![Twitter Follow](https://img.shields.io/twitter/follow/owasp_juiceshop.svg?style=social&label=Follow)](https://twitter.com/owasp_juiceshop)

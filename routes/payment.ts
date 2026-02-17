@@ -18,7 +18,7 @@ interface displayCard{
 module.exports.getPaymentMethods = function getPaymentMethods () {
   return async (req: Request, res: Response, next: NextFunction) => {
     const displayableCards: displayCard[] = []
-    const userId = parseInt(req.body.UserId)
+    const userId = parseInt(req.body.UserId, 10)
     const cards = await CardModel.findAll({ where: { UserId: userId } })
     cards.forEach(card => {
       const displayableCard: displayCard = {
@@ -39,7 +39,7 @@ module.exports.getPaymentMethods = function getPaymentMethods () {
 
 module.exports.getPaymentMethodById = function getPaymentMethodById () {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = parseInt(req.body.UserId)
+    const userId = parseInt(req.body.UserId, 10)
     const card = await CardModel.findOne({ where: { id: req.params.id, UserId: userId } })
     const displayableCard: displayCard = {
       UserId: 0,
@@ -69,7 +69,7 @@ module.exports.getPaymentMethodById = function getPaymentMethodById () {
 
 module.exports.delPaymentMethodById = function delPaymentMethodById () {
   return async (req: Request, res: Response, next: NextFunction) => {
-    const userId = parseInt(req.body.UserId)
+    const userId = parseInt(req.body.UserId, 10)
     const card = await CardModel.destroy({ where: { id: req.params.id, UserId: userId } })
     if (card) {
       res.status(200).json({ status: 'success', data: 'Card deleted successfully.' })

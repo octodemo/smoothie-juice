@@ -33,99 +33,66 @@ describe('/rest/products/search', () => {
       })
   })
 
-  it('GET product search fails with error message that exposes ins SQL Injection vulnerability', () => {
+  it('GET product search is no longer vulnerable to SQL injection via special chars', () => {
     return frisby.get(`${REST_URL}/products/search?q=';`)
-      .expect('status', 500)
-      .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', `<h1>${config.get('application.name')} (Express`)
-      .expect('bodyContains', 'SQLITE_ERROR: near &quot;;&quot;: syntax error')
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
+      })
   })
 
-  it('GET product search SQL Injection fails from two missing closing parenthesis', () => {
+  it('GET product search SQL injection attempt with UNION SELECT returns empty', () => {
     return frisby.get(`${REST_URL}/products/search?q=' union select id,email,password from users--`)
-      .expect('status', 500)
-      .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', `<h1>${config.get('application.name')} (Express`)
-      .expect('bodyContains', 'SQLITE_ERROR: near &quot;union&quot;: syntax error')
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
+      })
   })
 
-  it('GET product search SQL Injection fails from one missing closing parenthesis', () => {
+  it('GET product search SQL injection with single parenthesis returns empty', () => {
     return frisby.get(`${REST_URL}/products/search?q=') union select id,email,password from users--`)
-      .expect('status', 500)
-      .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', `<h1>${config.get('application.name')} (Express`)
-      .expect('bodyContains', 'SQLITE_ERROR: near &quot;union&quot;: syntax error')
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
+      })
   })
 
-  it('GET product search SQL Injection fails for SELECT * FROM attack due to wrong number of returned columns', () => {
+  it('GET product search SQL injection with SELECT * FROM returns empty result', () => {
     return frisby.get(`${REST_URL}/products/search?q=')) union select * from users--`)
-      .expect('status', 500)
-      .expect('header', 'content-type', /text\/html/)
-      .expect('bodyContains', `<h1>${config.get('application.name')} (Express`)
-      .expect('bodyContains', 'SQLITE_ERROR: SELECTs to the left and right of UNION do not have the same number of result columns', () => {})
+      .expect('status', 200)
+      .expect('header', 'content-type', /application\/json/)
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
+      })
   })
 
-  it('GET product search can create UNION SELECT with Users table and fixed columns', () => {
+  it('GET product search UNION SELECT with fixed columns returns no results after fix', () => {
     return frisby.get(`${REST_URL}/products/search?q=')) union select '1','2','3','4','5','6','7','8','9' from users--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('json', 'data.?', {
-        id: '1',
-        name: '2',
-        description: '3',
-        price: '4',
-        deluxePrice: '5',
-        image: '6',
-        createdAt: '7',
-        updatedAt: '8'
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
       })
   })
 
-  it('GET product search can create UNION SELECT with Users table and required columns', () => {
+  it('GET product search UNION SELECT to leak credentials returns no results after fix', () => {
     return frisby.get(`${REST_URL}/products/search?q=')) union select id,'2','3',email,password,'6','7','8','9' from users--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('json', 'data.?', {
-        id: 1,
-        price: `admin@${config.get('application.domain')}`,
-        deluxePrice: security.hash('admin123')
-      })
-      .expect('json', 'data.?', {
-        id: 2,
-        price: `jim@${config.get('application.domain')}`,
-        deluxePrice: security.hash('ncc-1701')
-      })
-      .expect('json', 'data.?', {
-        id: 3,
-        price: `bender@${config.get('application.domain')}`
-        // no check for Bender's password as it might have already been changed by different test
-      })
-      .expect('json', 'data.?', {
-        id: 4,
-        price: 'bjoern.kimminich@gmail.com',
-        deluxePrice: security.hash('bW9jLmxpYW1nQGhjaW5pbW1pay5ucmVvamI=')
-      })
-      .expect('json', 'data.?', {
-        id: 5,
-        price: `ciso@${config.get('application.domain')}`,
-        deluxePrice: security.hash('mDLx?94T~1CfVfZMzw@sJ9f?s3L6lbMqE70FfI8^54jbNikY5fymx7c!YbJb')
-      })
-      .expect('json', 'data.?', {
-        id: 6,
-        price: `support@${config.get('application.domain')}`,
-        deluxePrice: security.hash('J6aVjTgOpRs@?5l!Zkq2AYnCE@RF$P')
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
       })
   })
 
-  it('GET product search can create UNION SELECT with sqlite_master table and required column', () => {
+  it('GET product search UNION SELECT against sqlite_master returns no results after fix', () => {
     return frisby.get(`${REST_URL}/products/search?q=')) union select sql,'2','3','4','5','6','7','8','9' from sqlite_master--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
-      .expect('json', 'data.?', {
-        id: 'CREATE TABLE `BasketItems` (`ProductId` INTEGER REFERENCES `Products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, `BasketId` INTEGER REFERENCES `Baskets` (`id`) ON DELETE CASCADE ON UPDATE CASCADE, `id` INTEGER PRIMARY KEY AUTOINCREMENT, `quantity` INTEGER, `createdAt` DATETIME NOT NULL, `updatedAt` DATETIME NOT NULL, UNIQUE (`ProductId`, `BasketId`))'
-      })
-      .expect('json', 'data.?', {
-        id: 'CREATE TABLE sqlite_sequence(name,seq)'
+      .then(({ json }) => {
+        expect(json.data.length).toBe(0)
       })
   })
 
@@ -147,23 +114,21 @@ describe('/rest/products/search', () => {
       })
   })
 
-  it('GET product search can select logically deleted christmas special by forcibly commenting out the remainder of where clause', () => {
+  it('GET product search cannot bypass WHERE clause for christmas special after SQL injection fix', () => {
     return frisby.get(`${REST_URL}/products/search?q=${christmasProduct.name}'))--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
-        expect(json.data.length).toBe(1)
-        expect(json.data[0].name).toBe(christmasProduct.name)
+        expect(json.data.length).toBe(0)
       })
   })
 
-  it('GET product search can select logically deleted unsafe product by forcibly commenting out the remainder of where clause', () => {
+  it('GET product search cannot bypass WHERE clause for unsafe product after SQL injection fix', () => {
     return frisby.get(`${REST_URL}/products/search?q=${pastebinLeakProduct.name}'))--`)
       .expect('status', 200)
       .expect('header', 'content-type', /application\/json/)
       .then(({ json }) => {
-        expect(json.data.length).toBe(1)
-        expect(json.data[0].name).toBe(pastebinLeakProduct.name)
+        expect(json.data.length).toBe(0)
       })
   })
 
